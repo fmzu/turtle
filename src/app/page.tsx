@@ -83,10 +83,7 @@ export default function Home() {
   ])
 
   const placeholder = useMemo(
-    () =>
-      mode === "question"
-        ? "質問を入力（例: 男は遭難したことがある？）"
-        : "解答を入力（例: 遭難時に人肉を食べたと気づいた）",
+    () => (mode === "question" ? "質問を入力" : "解答を入力"),
     [mode],
   )
 
