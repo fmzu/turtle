@@ -1,83 +1,86 @@
-"use client";
+"use client"
 
-import { useMemo, useState } from "react";
+import { useMemo, useState } from "react"
 
 type Message = {
-  id: string;
-  role: "ai" | "user";
-  content: string;
-};
+  id: string
+  role: "ai" | "user"
+  content: string
+}
 
-type Mode = "question" | "guess";
+type Mode = "question" | "guess"
 
 const SCENARIO =
-  "ある男がレストランでウミガメのスープを注文した。ひとくち飲んだ男は店を出て、のちに死んだ。なぜ？";
+  "ある男がレストランでウミガメのスープを注文した。ひとくち飲んだ男は店を出て、のちに死んだ。なぜ？"
 
 const SOLUTION =
-  "彼は昔、遭難して命を取り留めた際に「ウミガメのスープ」を食べたと信じていた。レストランで飲んだ本物の味と違うと気づき、自分が当時人肉を食べさせられたと悟り絶望して死んだ。";
+  "彼は昔、遭難して命を取り留めた際に「ウミガメのスープ」を食べたと信じていた。レストランで飲んだ本物の味と違うと気づき、自分が当時人肉を食べさせられたと悟り絶望して死んだ。"
 
 const requiredKeywords = {
   shipwreck: ["遭難", "漂流", "海難", "船", "無人島"],
   cannibalism: ["人肉", "人間を食", "カニバリ", "人を食"],
   realizeDifferent: ["味が違", "違うと気づ", "別物", "本物", "違い"],
-};
+}
 
-const negativeKeywords = ["毒", "病気", "殺人", "事故", "借金", "失恋"];
+const negativeKeywords = ["毒", "病気", "殺人", "事故", "借金", "失恋"]
 
 function normalize(input: string) {
-  return input.replace(/\s+/g, "").toLowerCase();
+  return input.replace(/\s+/g, "").toLowerCase()
 }
 
 function containsAny(text: string, keywords: string[]) {
-  return keywords.some((word) => text.includes(word));
+  return keywords.some((word) => text.includes(word))
 }
 
 function answerQuestion(question: string) {
-  const q = normalize(question);
+  const q = normalize(question)
 
   if (containsAny(q, requiredKeywords.shipwreck)) {
-    return "はい。";
+    return "はい。"
   }
 
   if (containsAny(q, requiredKeywords.cannibalism)) {
-    return "はい。";
+    return "はい。"
   }
 
-  if (q.includes("スープ") && containsAny(q, requiredKeywords.realizeDifferent)) {
-    return "はい。";
+  if (
+    q.includes("スープ") &&
+    containsAny(q, requiredKeywords.realizeDifferent)
+  ) {
+    return "はい。"
   }
 
   if (containsAny(q, negativeKeywords)) {
-    return "いいえ。";
+    return "いいえ。"
   }
 
   if (q.includes("理由") || q.includes("なぜ") || q.includes("死因")) {
-    return "関係ない。";
+    return "関係ない。"
   }
 
-  return "わからない。";
+  return "わからない。"
 }
 
 function judgeGuess(guess: string) {
-  const g = normalize(guess);
-  const hasShipwreck = containsAny(g, requiredKeywords.shipwreck);
-  const hasCannibalism = containsAny(g, requiredKeywords.cannibalism);
+  const g = normalize(guess)
+  const hasShipwreck = containsAny(g, requiredKeywords.shipwreck)
+  const hasCannibalism = containsAny(g, requiredKeywords.cannibalism)
   const hasRealizeDifferent =
-    g.includes("スープ") && containsAny(g, requiredKeywords.realizeDifferent);
+    g.includes("スープ") && containsAny(g, requiredKeywords.realizeDifferent)
 
-  return hasShipwreck && hasCannibalism && hasRealizeDifferent;
+  return hasShipwreck && hasCannibalism && hasRealizeDifferent
 }
 
 export default function Home() {
-  const [mode, setMode] = useState<Mode>("question");
-  const [input, setInput] = useState("");
+  const [mode, setMode] = useState<Mode>("question")
+  const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "ai-intro",
       role: "ai",
       content: `出題: ${SCENARIO} 質問は「はい / いいえ / 関係ない / わからない」で答えます。`,
     },
-  ]);
+  ])
 
   const placeholder = useMemo(
     () =>
@@ -85,35 +88,35 @@ export default function Home() {
         ? "質問を入力（例: 男は遭難したことがある？）"
         : "解答を入力（例: 遭難時に人肉を食べたと気づいた）",
     [mode],
-  );
+  )
 
   function pushMessage(role: Message["role"], content: string) {
     setMessages((prev) => [
       ...prev,
       { id: `${role}-${Date.now()}-${prev.length}`, role, content },
-    ]);
+    ])
   }
 
   function handleSend() {
-    const trimmed = input.trim();
-    if (!trimmed) return;
+    const trimmed = input.trim()
+    if (!trimmed) return
 
-    pushMessage("user", trimmed);
+    pushMessage("user", trimmed)
 
     if (mode === "question") {
-      const reply = answerQuestion(trimmed);
-      pushMessage("ai", reply);
-      setInput("");
-      return;
+      const reply = answerQuestion(trimmed)
+      pushMessage("ai", reply)
+      setInput("")
+      return
     }
 
-    const correct = judgeGuess(trimmed);
+    const correct = judgeGuess(trimmed)
     if (correct) {
-      pushMessage("ai", `正解！ ${SOLUTION}`);
+      pushMessage("ai", `正解！ ${SOLUTION}`)
     } else {
-      pushMessage("ai", "不正解。もう少し。");
+      pushMessage("ai", "不正解。もう少し。")
     }
-    setInput("");
+    setInput("")
   }
 
   return (
@@ -126,7 +129,9 @@ export default function Home() {
             </div>
             <div>
               <p className="text-xs text-zinc-500">出題者</p>
-              <h1 className="text-lg font-semibold tracking-tight">ウミガメのスープ</h1>
+              <h1 className="text-lg font-semibold tracking-tight">
+                ウミガメのスープ
+              </h1>
             </div>
           </div>
           <section className="rounded-t-2xl rounded-b-none border border-zinc-200 bg-white px-4 py-3 shadow-sm">
@@ -193,8 +198,8 @@ export default function Home() {
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  handleSend();
+                  event.preventDefault()
+                  handleSend()
                 }
               }}
               className="flex-1 rounded-full border border-zinc-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
@@ -211,5 +216,5 @@ export default function Home() {
         </section>
       </main>
     </div>
-  );
+  )
 }
